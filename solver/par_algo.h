@@ -1,6 +1,7 @@
 #pragma once
 #include "../sudoku/sudoku.h"
 
-bool parAlgoSerial(Board& board);
-bool parAlgoOpenMP(Board& board);
-bool parAlgoMPI(Board& board, int rank, int size);
+// Optimized parallel solver: constraint propagation + backtracking
+// Uses MPI to distribute search branches across processes,
+// OpenMP to parallelize within each process.
+bool parAlgo(Board& board, int rank, int size);

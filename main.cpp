@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
     if (algo == "brute") {
         if (rank == 0) solved = bruteAlgoSerial(board);
     } else if (algo == "par") {
-        solved = parAlgoMPI(board, rank, size);
+        solved = parAlgo(board, rank, size);
     } else {
         if (rank == 0) std::cerr << "Unknown algorithm: " << algo << "\n";
     }
