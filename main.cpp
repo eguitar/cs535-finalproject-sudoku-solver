@@ -25,18 +25,31 @@ int main(int argc, char** argv) {
     Board board;
     if (rank == 0) {
         board = loadBoard(boardFile);
-        std::cout << "Input board:\n";
+        std::cout << "Input board (" << board.N << "x" << board.N << "):\n";
         printBoard(board);
     }
 
-    // Broadcast board to all MPI ranks
-    MPI_Bcast(board.data(), N * N, MPI_INT, 0, MPI_COMM_WORLD);
+    // broadcast board size, then cells
+    int N = board.N;
+    MPI_Bcast(&N, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    if (rank != 0) board = Board(N);
+
+    std::vector<int> flat(N * N);
+    if (rank == 0)
+        for (int r = 0; r < N; r++)
+            for (int c = 0; c < N; c++)
+                flat[r * N + c] = board.cells[r][c];
+    MPI_Bcast(flat.data(), N * N, MPI_INT, 0, MPI_COMM_WORLD);
+    if (rank != 0)
+        for (int r = 0; r < N; r++)
+            for (int c = 0; c < N; c++)
+                board.cells[r][c] = flat[r * N + c];
 
     bool solved = false;
     auto start = std::chrono::high_resolution_clock::now();
 
     if (algo == "brute") {
-        solved = bruteAlgoMPI(board, rank, size);
+        if (rank == 0) solved = bruteAlgoSerial(board);
     } else if (algo == "par") {
         solved = parAlgoMPI(board, rank, size);
     } else {

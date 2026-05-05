@@ -16,11 +16,17 @@ $(TARGET): $(SRCS)
 clean:
 	rm -f $(TARGET)
 
-run-brute:
-	mpirun -np 4 ./$(TARGET) test/boards/easy.txt brute
+run-brute-4x4:
+	mpirun -np 1 ./$(TARGET) test/boards/4x4/easy.txt brute
 
-run-par:
-	mpirun -np 4 ./$(TARGET) test/boards/easy.txt par
+run-brute-9x9:
+	mpirun -np 1 ./$(TARGET) test/boards/9x9/easy.txt brute
 
-run-hard:
-	mpirun -np 4 ./$(TARGET) test/boards/hard.txt par
+run-brute-16x16:
+	mpirun -np 1 ./$(TARGET) test/boards/16x16/easy.txt brute
+
+run-par-9x9:
+	mpirun -np 4 ./$(TARGET) test/boards/9x9/hard.txt par
+
+run-par-16x16:
+	mpirun -np 4 ./$(TARGET) test/boards/16x16/hard.txt par
