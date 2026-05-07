@@ -19,6 +19,9 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 RESULTS_CSV="$RESULTS_DIR/results_$TIMESTAMP.csv"
 SUMMARY_TXT="$RESULTS_DIR/summary_$TIMESTAMP.txt"
 
+# Per-board timeout (seconds) — boards exceeding this are marked TIMEOUT
+TIMEOUT_S=30
+
 # MPI process counts to test for par algo
 MPI_PROCS=(1 2 4 8)
 
@@ -87,15 +90,17 @@ check_solver() {
     fi
 }
 
-# Run solver and extract wall-clock time (seconds) from its output.
-# Returns "UNSOLVED" if no solution found, or the time string.
+# Run solver with a timeout and extract wall-clock time from its output.
+# Returns "TIMEOUT", "UNSOLVED", or the numeric time string.
 run_and_time() {
     local cmd="$1"
     local output
-    output=$(eval "$cmd" 2>&1)
+    output=$(eval "timeout ${TIMEOUT_S}s $cmd" 2>&1)
     local status=$?
 
-    if echo "$output" | grep -q "Solved in"; then
+    if [ $status -eq 124 ]; then
+        echo "TIMEOUT(>${TIMEOUT_S}s)"
+    elif echo "$output" | grep -q "Solved in"; then
         echo "$output" | grep "Solved in" | awk '{print $3}' | tr -d 's'
     elif echo "$output" | grep -q "No solution"; then
         echo "UNSOLVED"
@@ -188,7 +193,7 @@ echo "======================================================================"
     echo "Results CSV:   $RESULTS_CSV"
     echo ""
     echo "Best par speedup per board size:"
-    for sz in 4x4 9x9 16x16 25x25; do
+    for sz in 4x4 9x9 16x16 25x25 36x36 49x49; do
         best=$(grep ",$sz," "$RESULTS_CSV" | grep ",par," \
                | awk -F',' '{print $9}' \
                | grep -E '^[0-9]' \
