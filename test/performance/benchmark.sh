@@ -95,7 +95,7 @@ check_solver() {
 run_and_time() {
     local cmd="$1"
     local output
-    output=$(eval "timeout ${TIMEOUT_S}s $cmd" 2>&1)
+    output=$(timeout ${TIMEOUT_S}s bash -c "$cmd" 2>&1)
     local status=$?
 
     if [ $status -eq 124 ]; then
